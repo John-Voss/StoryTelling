@@ -6,7 +6,8 @@ import {
   Platform,
   StatusBar,
   Image,
-  Dimensions
+  Dimensions,
+  TouchableOpacity
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { RFValue } from "react-native-responsive-fontsize";
@@ -20,7 +21,9 @@ export default class StoryCard extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      fontsLoaded: false
+      fontsLoaded: false,
+      storyId: this.props.story.key,
+      storyData: this.props.story.value
     };
   }
 
@@ -34,26 +37,35 @@ export default class StoryCard extends Component {
   }
 
   render() {
+    var story = this.state.storyData
     if (!this.state.fontsLoaded) {
       return <AppLoading />;
     } else {
+      var images = {
+        'image_1': require('../assets/story_image_1.png'),
+        'image_2': require('../assets/story_image_2.png'),
+        'image_3': require('../assets/story_image_3.png'),
+        'image_4': require('../assets/story_image_4.png'),
+        'image_5': require('../assets/story_image_5.png')
+    }
       return (
-        <View style={styles.container}>
+        
+        <TouchableOpacity style={styles.container} onPress={()=>this.props.navigation.navigate('StoryScreen', {story: this.props.story})}>
           <View style={styles.cardContainer}>
             <Image
-              source={require("../assets/story_image_1.png")}
+              source={images[story.preview_image]}
               style={styles.storyImage}
             ></Image>
 
             <View style={styles.titleContainer}>
               <Text style={styles.storyTitleText}>
-                {this.props.story.title}
+                {story.title}
               </Text>
               <Text style={styles.storyAuthorText}>
-                {this.props.story.author}
+                {story.author}
               </Text>
               <Text style={styles.descriptionText}>
-                {this.props.story.description}
+                {story.description}
               </Text>
             </View>
             <View style={styles.actionContainer}>
@@ -63,20 +75,35 @@ export default class StoryCard extends Component {
               </View>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       );
     }
   }
 }
 
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1
+  droidSafeArea: {
+    marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0
   },
   cardContainer: {
     margin: RFValue(13),
     backgroundColor: "#2f345d",
     borderRadius: RFValue(20)
+  },
+  cardContainerLight: {
+    margin: RFValue(13),
+
+    backgroundColor: "white",
+    borderRadius: RFValue(20),
+    shadowColor: "rgb(0, 0, 0)",
+    shadowOffset: {
+      width: 3,
+      height: 3
+    },
+    shadowOpacity: RFValue(0.5),
+    shadowRadius: RFValue(5),
+    elevation: RFValue(2)
   },
   storyImage: {
     resizeMode: "contain",
@@ -88,21 +115,44 @@ const styles = StyleSheet.create({
     paddingLeft: RFValue(20),
     justifyContent: "center"
   },
+  titleTextContainer: {
+    flex: 0.8
+  },
+  iconContainer: {
+    flex: 0.2
+  },
   storyTitleText: {
-    fontSize: RFValue(25),
     fontFamily: "Bubblegum-Sans",
+    fontSize: RFValue(25),
     color: "white"
   },
-  storyAuthorText: {
-    fontSize: RFValue(18),
+  storyTitleTextLight: {
     fontFamily: "Bubblegum-Sans",
+    fontSize: RFValue(25),
+    color: "black"
+  },
+  storyAuthorText: {
+    fontFamily: "Bubblegum-Sans",
+    fontSize: RFValue(18),
     color: "white"
+  },
+  storyAuthorTextLight: {
+    fontFamily: "Bubblegum-Sans",
+    fontSize: RFValue(18),
+    color: "black"
+  },
+  descriptionContainer: {
+    marginTop: RFValue(5)
   },
   descriptionText: {
     fontFamily: "Bubblegum-Sans",
-    fontSize: 13,
-    color: "white",
-    paddingTop: RFValue(10)
+    fontSize: RFValue(13),
+    color: "white"
+  },
+  descriptionTextLight: {
+    fontFamily: "Bubblegum-Sans",
+    fontSize: RFValue(13),
+    color: "black"
   },
   actionContainer: {
     justifyContent: "center",
@@ -120,6 +170,11 @@ const styles = StyleSheet.create({
   },
   likeText: {
     color: "white",
+    fontFamily: "Bubblegum-Sans",
+    fontSize: RFValue(25),
+    marginLeft: RFValue(5)
+  },
+  likeTextLight: {
     fontFamily: "Bubblegum-Sans",
     fontSize: RFValue(25),
     marginLeft: RFValue(5)

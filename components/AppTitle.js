@@ -3,10 +3,36 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert, Image } from 'react-na
 import * as Font from 'expo-font';
 import { RFValue } from "react-native-responsive-fontsize";
 
+import firebase from 'firebase';
+import db from '../config'
+
 let customFonts = {
     "Bubblegum-Sans": require("../assets/fonts/BubblegumSans-Regular.ttf")
   };
 export default class AppTitle extends React.Component {
+    constructor() {
+        super();
+        this.state = {
+            light_theme: true
+        }
+    }
+
+    componentDidMount() {
+        let theme
+        firebase
+            .database()
+            // .ref("/users/" + firebase.auth().currentUser.uid)
+            // .on("value", function (snapshot) {
+            //     theme = snapshot.val().current_theme;
+            // });
+            .ref('/')
+            .on('value', data => {
+                theme = data.val().current_theme;
+            })
+        this.setState({
+            light_theme: theme === "light" ? true : false,
+        });
+    }
     render() {
         return (
             <View style={styles.appTitle}>
@@ -17,7 +43,9 @@ export default class AppTitle extends React.Component {
                     ></Image>
                 </View>
                 <View style={styles.appTitleTextContainer}>
-                    <Text style={styles.appTitleText}>{this.props.title}</Text>
+                    <Text style={this.state.light_theme?
+                    styles.appTitleTextLight:
+                    styles.appTitleText}>{this.props.title}</Text>
                 </View>
             </View>
         )
@@ -46,6 +74,11 @@ const styles = StyleSheet.create({
     appTitleText: {
         color: "white",
         fontSize: RFValue(28),
-        // fontFamily: "Bubblegum-Sans",
+        fontFamily: "Bubblegum-Sans"
+    },
+      appTitleTextLight: {
+        color: "black",
+        fontSize: RFValue(28),
+        fontFamily: "Bubblegum-Sans"
     },
 })
