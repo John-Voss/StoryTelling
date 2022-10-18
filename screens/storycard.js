@@ -14,16 +14,20 @@ import { RFValue } from "react-native-responsive-fontsize";
 import AppLoading from "expo-app-loading";
 import * as Font from "expo-font";
 
+import firebase from 'firebase';
+
 let customFonts = {
-    "Bubblegum-Sans": require("../assets/fonts/BubblegumSans-Regular.ttf")
-  };
+  "Bubblegum-Sans": require("../assets/fonts/BubblegumSans-Regular.ttf")
+};
 export default class StoryCard extends Component {
   constructor(props) {
     super(props);
     this.state = {
       fontsLoaded: false,
       storyId: this.props.story.key,
-      storyData: this.props.story.value
+      storyData: this.props.story.value,
+      isLiked: false,
+      likes: this.props.story.value.likes
     };
   }
 
@@ -36,6 +40,26 @@ export default class StoryCard extends Component {
     this._loadFontsAsync();
   }
 
+  likeAction = () => {
+    if (this.state.isLiked) {
+      firebase
+        .database()
+        .ref("posts")
+        .child(this.state.storyId)
+        .child("likes")
+        .set(firebase.database.ServerValue.increment(-1));
+      this.setState({ likes: (this.state.likes -= 1), isLiked: false });
+    } else {
+      firebase
+        .database()
+        .ref("posts")
+        .child(this.state.storyId)
+        .child("likes")
+        .set(firebase.database.ServerValue.increment(1));
+      this.setState({ likes: (this.state.likes += 1), isLiked: true });
+    }
+  };
+
   render() {
     var story = this.state.storyData
     if (!this.state.fontsLoaded) {
@@ -47,10 +71,10 @@ export default class StoryCard extends Component {
         'image_3': require('../assets/story_image_3.png'),
         'image_4': require('../assets/story_image_4.png'),
         'image_5': require('../assets/story_image_5.png')
-    }
+      }
       return (
-        
-        <TouchableOpacity style={styles.container} onPress={()=>this.props.navigation.navigate('StoryScreen', {story: this.props.story})}>
+
+        <TouchableOpacity style={styles.container} onPress={() => this.props.navigation.navigate('StoryScreen', { story: this.props.story })}>
           <View style={styles.cardContainer}>
             <Image
               source={images[story.preview_image]}
@@ -69,10 +93,15 @@ export default class StoryCard extends Component {
               </Text>
             </View>
             <View style={styles.actionContainer}>
-              <View style={styles.likeButton}>
-                <Ionicons name={"heart"} size={RFValue(30)} color={"white"} />
-                <Text style={styles.likeText}>12k</Text>
-              </View>
+
+              <TouchableOpacity style={this.state.isLiked?styles.likeButtonLiked:styles.likeButtonDisliked} onPress={()=>this.likeAction()}>
+                  {/* <View> */}
+                    <Ionicons name={"heart"} size={RFValue(30)} color={"white"} />
+                  {/* </View> */}
+                  {/* <View> */}
+                    <Text style={styles.likeText}>{this.state.likes}</Text>
+                  {/* </View> */}
+              </TouchableOpacity>
             </View>
           </View>
         </TouchableOpacity>
@@ -159,7 +188,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: RFValue(10)
   },
-  likeButton: {
+  likeButtonLiked: {
     width: RFValue(160),
     height: RFValue(40),
     justifyContent: "center",
@@ -168,15 +197,27 @@ const styles = StyleSheet.create({
     backgroundColor: "#eb3948",
     borderRadius: RFValue(30)
   },
+  likeButtonDisliked: {
+    width: RFValue(160),
+    height: RFValue(40),
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    borderColor: "#eb3948",
+    borderWidth: 2,
+    borderRadius: RFValue(30)
+  },
   likeText: {
     color: "white",
     fontFamily: "Bubblegum-Sans",
-    fontSize: RFValue(25),
-    marginLeft: RFValue(5)
+    fontSize: 25,
+    marginLeft: 25,
+    marginTop: 6
   },
   likeTextLight: {
     fontFamily: "Bubblegum-Sans",
-    fontSize: RFValue(25),
-    marginLeft: RFValue(5)
+    fontSize: 25,
+    marginLeft: 25,
+    marginTop: 6
   }
 });
